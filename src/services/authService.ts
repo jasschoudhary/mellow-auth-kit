@@ -14,10 +14,37 @@ const logUsers = () => {
   console.log("Current users:", fetch('/api/users').then(res => res.json()));
 };
 
+// Helper function to handle API responses safely
+const handleApiResponse = async (response: Response) => {
+  if (!response.ok) {
+    // Try to parse error as JSON first
+    try {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Error: ${response.status} ${response.statusText}`);
+    } catch (e) {
+      // If JSON parsing fails, use text or status
+      const errorText = await response.text();
+      if (errorText) {
+        throw new Error(`Error: ${errorText}`);
+      } else {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      }
+    }
+  }
+
+  // For successful responses, handle empty responses gracefully
+  try {
+    const text = await response.text();
+    return text ? JSON.parse(text) : { success: true };
+  } catch (e) {
+    console.error('Response parsing error:', e);
+    return { success: true };
+  }
+};
+
 // Sign up function
 export const signUp = async (name: string, email: string, password: string) => {
   try {
-    // Check if user already exists
     const response = await fetch('/api/signup', {
       method: 'POST',
       headers: {
@@ -26,19 +53,7 @@ export const signUp = async (name: string, email: string, password: string) => {
       body: JSON.stringify({ name, email, password }),
     });
 
-    if (response.status === 409) {
-      // User already exists
-      const data = await response.json();
-      throw new Error(data.error);
-    }
-
-    if (!response.ok) {
-      // Generic error
-      const data = await response.json();
-      throw new Error(data.error || 'Failed to sign up');
-    }
-
-    return await response.json();
+    return await handleApiResponse(response);
   } catch (error) {
     console.error('Sign up error:', error);
     throw error;
@@ -56,12 +71,7 @@ export const login = async (email: string, password: string) => {
       body: JSON.stringify({ email, password }),
     });
 
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || 'Invalid credentials');
-    }
-
-    const result = await response.json();
+    const result = await handleApiResponse(response);
     
     // Store token in localStorage for future requests
     if (result.token) {
@@ -86,18 +96,7 @@ export const forgotPassword = async (email: string) => {
       body: JSON.stringify({ email }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch (e) {
-        throw new Error('Server error: ' + errorText);
-      }
-      throw new Error(errorData.error || 'Failed to send reset email');
-    }
-
-    const data = await response.json();
+    const data = await handleApiResponse(response);
     
     // Show confirmation banner
     toast.success(data.message || "Reset email sent");
@@ -120,12 +119,7 @@ export const resetPassword = async (token: string, password: string) => {
       body: JSON.stringify({ token, password }),
     });
 
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || 'Failed to reset password');
-    }
-
-    return await response.json();
+    return await handleApiResponse(response);
   } catch (error) {
     console.error('Reset password error:', error);
     throw error;
@@ -134,5 +128,6 @@ export const resetPassword = async (token: string, password: string) => {
 
 // Google login function
 export const googleLogin = () => {
+  // Direct to the Google OAuth endpoint
   window.location.href = '/auth/google';
 };

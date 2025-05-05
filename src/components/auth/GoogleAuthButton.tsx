@@ -5,11 +5,12 @@ import { toast } from "sonner";
 import { googleLogin } from "@/services/authService";
 
 const GoogleAuthButton = () => {
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     try {
-      googleLogin();
+      await googleLogin();
     } catch (error) {
-      toast.error("Failed to initiate Google login");
+      console.error("Google login error:", error);
+      toast.error("Failed to initiate Google login. Please try again later.");
     }
   };
 
