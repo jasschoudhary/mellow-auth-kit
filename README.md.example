@@ -1,0 +1,143 @@
+
+# Authentication System
+
+A complete authentication system with login, sign-up, forgot password, and Google OAuth login functionality.
+
+## Features
+
+- User sign-up with email and password
+- User login with email and password
+- Password reset via email
+- Google OAuth login
+- JWT-based authentication
+- Secure password hashing using bcrypt
+- Email delivery for password reset
+
+## Project Structure
+
+```
+/project-root
+├─ public/
+│  ├─ index.html
+│  ├─ style.css
+│  └─ app.js
+├─ src/
+│  ├─ pages/
+│  │  ├─ Index.tsx (Login/Signup tabs)
+│  │  ├─ SignUp.tsx
+│  │  ├─ ForgotPassword.tsx
+│  │  └─ ResetPassword.tsx
+│  └─ services/
+│     └─ authService.ts
+└─ server.js
+```
+
+## Installation
+
+### Frontend
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+### Backend (server.js)
+
+1. Install server dependencies:
+   ```bash
+   npm install express body-parser cors bcrypt jsonwebtoken nodemailer uuid helmet
+   ```
+2. Create a `.env` file in the project root with the following variables:
+   ```
+   PORT=5000
+   JWT_SECRET=your-secret-key
+   SMTP_HOST=smtp.mailtrap.io
+   SMTP_PORT=2525
+   SMTP_USER=your-mailtrap-user
+   SMTP_PASS=your-mailtrap-password
+   EMAIL_FROM=auth@example.com
+   FRONTEND_URL=http://localhost:3000
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+   BASE_URL=http://localhost:5000
+   ```
+3. Start the server:
+   ```bash
+   node server.js
+   ```
+
+## Setting Up Google OAuth
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project
+3. Navigate to "APIs & Services" > "Credentials"
+4. Click "Create Credentials" > "OAuth client ID"
+5. Set the application type to "Web application"
+6. Add authorized redirect URIs:
+   - `http://localhost:5000/auth/google/callback` (for development)
+   - Your production URL for the callback (e.g., `https://your-app.com/auth/google/callback`)
+7. Copy the Client ID and Client Secret to your `.env` file
+
+## Testing Email Delivery
+
+For development and testing, this project uses [Mailtrap](https://mailtrap.io/):
+
+1. Create a free Mailtrap account
+2. Go to the Mailtrap inbox and copy the SMTP credentials
+3. Add these credentials to your `.env` file
+4. All emails sent from the application will be captured in your Mailtrap inbox
+
+For production, replace the Mailtrap SMTP settings with your actual email service provider.
+
+## Connecting to a Real Database
+
+The server example uses file-based storage for simplicity. To use a real database:
+
+### MongoDB Example
+
+```javascript
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGODB_URI);
+
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, unique: true },
+  passwordHash: String,
+  resetToken: String,
+  resetTokenExpiry: Date,
+  googleId: String,
+  createdAt: { type: Date, default: Date.now }
+});
+
+const User = mongoose.model('User', userSchema);
+
+// Then replace file operations with User.find(), User.create(), etc.
+```
+
+### MySQL Example
+
+```javascript
+const mysql = require('mysql2/promise');
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
+});
+
+// Then replace file operations with SQL queries
+```
+
+## Security Considerations
+
+- JWT secrets should be long, random strings
+- Use HTTPS in production
+- Set secure and httpOnly flags on cookies
+- Implement rate limiting for login attempts
+- Consider adding CSRF protection
+- Regularly rotate secrets and credentials

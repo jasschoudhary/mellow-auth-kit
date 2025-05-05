@@ -119,6 +119,11 @@ const Index = () => {
                 >
                   {isLoggingIn ? "Logging in..." : "Login"}
                 </Button>
+                
+                <div className="text-center text-sm">
+                  Don't have an account? <Link to="/signup" className="text-blue-500 hover:underline">Sign up now</Link>
+                </div>
+                
                 <div className="relative w-full">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t border-gray-300" />

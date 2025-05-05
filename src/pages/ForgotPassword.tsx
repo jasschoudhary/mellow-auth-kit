@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { forgotPassword } from "@/services/authService";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -21,12 +22,15 @@ const ForgotPassword = () => {
     
     setIsSubmitting(true);
     
-    // Simulate password reset request (in a real app, this would be an API call)
-    setTimeout(() => {
+    try {
+      // Call the forgot password API
+      await forgotPassword(email);
       setSubmitted(true);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to send reset email");
+    } finally {
       setIsSubmitting(false);
-      toast.success("Password reset link sent to your email");
-    }, 1500);
+    }
   };
 
   return (
