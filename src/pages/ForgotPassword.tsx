@@ -26,8 +26,10 @@ const ForgotPassword = () => {
       // Call the forgot password API
       await forgotPassword(email);
       setSubmitted(true);
+      toast.success(`Password reset link sent to ${email}`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to send reset email");
+      const errorMessage = error instanceof Error ? error.message : "Failed to send reset email";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

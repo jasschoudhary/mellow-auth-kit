@@ -9,12 +9,9 @@ interface User {
   resetTokenExpiry?: Date;
 }
 
-// Simulate persistent storage (in a real app, this would be a database)
-let users: User[] = [];
-
 // For development purposes, you can see the current users in the console
 const logUsers = () => {
-  console.log("Current users:", users);
+  console.log("Current users:", fetch('/api/users').then(res => res.json()));
 };
 
 // Sign up function
@@ -37,7 +34,8 @@ export const signUp = async (name: string, email: string, password: string) => {
 
     if (!response.ok) {
       // Generic error
-      throw new Error('Failed to sign up');
+      const data = await response.json();
+      throw new Error(data.error || 'Failed to sign up');
     }
 
     return await response.json();
@@ -63,7 +61,14 @@ export const login = async (email: string, password: string) => {
       throw new Error(data.error || 'Invalid credentials');
     }
 
-    return await response.json();
+    const result = await response.json();
+    
+    // Store token in localStorage for future requests
+    if (result.token) {
+      localStorage.setItem('authToken', result.token);
+    }
+    
+    return result;
   } catch (error) {
     console.error('Login error:', error);
     throw error;
@@ -82,8 +87,14 @@ export const forgotPassword = async (email: string) => {
     });
 
     if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || 'Failed to send reset email');
+      const errorText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch (e) {
+        throw new Error('Server error: ' + errorText);
+      }
+      throw new Error(errorData.error || 'Failed to send reset email');
     }
 
     const data = await response.json();
