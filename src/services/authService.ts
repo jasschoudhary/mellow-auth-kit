@@ -19,20 +19,25 @@ const handleApiResponse = async (response: Response) => {
   if (!response.ok) {
     // Try to parse error as JSON first
     try {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `Error: ${response.status} ${response.statusText}`);
-    } catch (e) {
-      // If JSON parsing fails, use text or status
       const errorText = await response.text();
-      if (errorText) {
-        throw new Error(`Error: ${errorText}`);
-      } else {
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      try {
+        // Try to parse as JSON
+        const errorData = JSON.parse(errorText);
+        throw new Error(errorData.error || `Error: ${response.status} ${response.statusText}`);
+      } catch (jsonError) {
+        // If JSON parsing fails, use text
+        if (errorText) {
+          throw new Error(`Error: ${errorText}`);
+        } else {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
       }
+    } catch (e) {
+      throw new Error(`Error: ${response.status} ${response.statusText}`);
     }
   }
 
-  // For successful responses, handle empty responses gracefully
+  // For successful responses, parse the JSON
   try {
     const text = await response.text();
     return text ? JSON.parse(text) : { success: true };
