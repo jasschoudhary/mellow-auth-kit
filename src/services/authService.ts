@@ -14,6 +14,17 @@ const logUsers = () => {
   console.log("Current users:", fetch('/api/users').then(res => res.json()));
 };
 
+// Get the API base URL based on the environment
+const getApiBaseUrl = () => {
+  // Check if we're running on localhost or in development
+  if (window.location.hostname === 'localhost' || window.location.hostname.includes('lovableproject.com')) {
+    // For local development or Lovable preview, use port 5000
+    return 'http://localhost:5000';
+  }
+  // For production, use the same origin
+  return '';
+};
+
 // Helper function to handle API responses safely
 const handleApiResponse = async (response: Response) => {
   if (!response.ok) {
@@ -49,9 +60,12 @@ const handleApiResponse = async (response: Response) => {
 
 // Sign up function
 export const signUp = async (name: string, email: string, password: string) => {
+  const apiBaseUrl = getApiBaseUrl();
   try {
-    console.log("Sending signup request:", { name, email, password: "***" });
-    const response = await fetch('/api/signup', {
+    console.log("Sending signup request to:", `${apiBaseUrl}/api/signup`);
+    console.log("Signup data:", { name, email, password: "***" });
+    
+    const response = await fetch(`${apiBaseUrl}/api/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -59,8 +73,10 @@ export const signUp = async (name: string, email: string, password: string) => {
       body: JSON.stringify({ name, email, password }),
     });
 
+    console.log("Signup response status:", response.status);
+    
     const result = await handleApiResponse(response);
-    console.log("Signup response:", result);
+    console.log("Signup response result:", result);
     return result;
   } catch (error) {
     console.error('Sign up error:', error);
@@ -70,8 +86,9 @@ export const signUp = async (name: string, email: string, password: string) => {
 
 // Login function
 export const login = async (email: string, password: string) => {
+  const apiBaseUrl = getApiBaseUrl();
   try {
-    const response = await fetch('/api/login', {
+    const response = await fetch(`${apiBaseUrl}/api/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -95,8 +112,9 @@ export const login = async (email: string, password: string) => {
 
 // Forgot password function
 export const forgotPassword = async (email: string) => {
+  const apiBaseUrl = getApiBaseUrl();
   try {
-    const response = await fetch('/api/forgot-password', {
+    const response = await fetch(`${apiBaseUrl}/api/forgot-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -118,8 +136,9 @@ export const forgotPassword = async (email: string) => {
 
 // Reset password function
 export const resetPassword = async (token: string, password: string) => {
+  const apiBaseUrl = getApiBaseUrl();
   try {
-    const response = await fetch('/api/reset-password', {
+    const response = await fetch(`${apiBaseUrl}/api/reset-password`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -136,6 +155,7 @@ export const resetPassword = async (token: string, password: string) => {
 
 // Google login function
 export const googleLogin = () => {
+  const apiBaseUrl = getApiBaseUrl();
   // Direct to the Google OAuth endpoint
-  window.location.href = '/auth/google';
+  window.location.href = `${apiBaseUrl}/auth/google`;
 };
