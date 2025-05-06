@@ -30,11 +30,13 @@ const SignupForm = () => {
     setIsSigningUp(true);
     
     try {
-      // In a real app, this would be connected to the auth service
-      await signUp(name, email, password);
+      // Connect to the auth service
+      const result = await signUp(name, email, password);
+      console.log("Signup result:", result);
       toast.success("Account created successfully!");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to create account");
+      console.error("Signup error:", error);
     } finally {
       setIsSigningUp(false);
     }

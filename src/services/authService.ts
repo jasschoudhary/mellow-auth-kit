@@ -45,6 +45,7 @@ const handleApiResponse = async (response: Response) => {
 // Sign up function
 export const signUp = async (name: string, email: string, password: string) => {
   try {
+    console.log("Sending signup request:", { name, email, password: "***" });
     const response = await fetch('/api/signup', {
       method: 'POST',
       headers: {
@@ -53,7 +54,9 @@ export const signUp = async (name: string, email: string, password: string) => {
       body: JSON.stringify({ name, email, password }),
     });
 
-    return await handleApiResponse(response);
+    const result = await handleApiResponse(response);
+    console.log("Signup response:", result);
+    return result;
   } catch (error) {
     console.error('Sign up error:', error);
     throw error;
